@@ -1,20 +1,19 @@
 import flet as ft
 
 from components.header import header
+from components.placeholder import placeholder_page
 from components.sidebar import sidebar
 from components.theme import Colors, Spacing, app_theme
 from data.dummy_data import STUDENT
 from pages.dashboard import dashboard_page
-from pages.mata_kuliah import mata_kuliah_page
-from pages.nilai import nilai_page
-from pages.profile import profile_page
 
 # (label menu, icon, function halaman). Tambah menu baru cukup di sini.
+# Ganti placeholder_page dengan function halaman asli saat sudah tersedia.
 PAGES = [
     ("Dashboard", ft.Icons.DASHBOARD_OUTLINED, dashboard_page),
-    ("Mata Kuliah", ft.Icons.MENU_BOOK_OUTLINED, mata_kuliah_page),
-    ("Nilai", ft.Icons.GRADING_OUTLINED, nilai_page),
-    ("Profile", ft.Icons.PERSON_OUTLINE, profile_page),
+    ("Mata Kuliah", ft.Icons.MENU_BOOK_OUTLINED, lambda: placeholder_page("Mata Kuliah")),
+    ("Nilai", ft.Icons.GRADING_OUTLINED, lambda: placeholder_page("Nilai")),
+    ("Profile", ft.Icons.PERSON_OUTLINE, lambda: placeholder_page("Profile")),
 ]
 
 
