@@ -1,28 +1,62 @@
+from datetime import datetime
+
 import flet as ft
 
 from components.badge import badge
 from components.card import section_card
 from components.stat_card import stat_card
 from components.theme import Colors, FontSize, Radius, Spacing
-from data.dummy_data import JADWAL_HARI_INI, PENGUMUMAN, STUDENT, hitung_ipk, total_sks_lulus
+from data.dummy_data import JADWAL_HARI_INI, MATA_KULIAH, PENGUMUMAN, STUDENT, hitung_ipk, total_sks_lulus
+
+STAT_CARD_COLUMNS = {"xs": 12, "md": 6, "xl": 3}
+
+
+def _sapaan(jam: int) -> str:
+    if jam < 11:
+        return "Selamat pagi"
+    if jam < 15:
+        return "Selamat siang"
+    if jam < 18:
+        return "Selamat sore"
+    return "Selamat malam"
+
+
+def _mata_kuliah_semester_ini() -> list[dict]:
+    return [mk for mk in MATA_KULIAH if mk["semester"] == STUDENT["semester_aktif"]]
+
+
+def _welcome_badge(text: str) -> ft.Container:
+    return badge(text, Colors.TEXT_ON_PRIMARY, ft.Colors.with_opacity(0.18, Colors.TEXT_ON_PRIMARY))
 
 
 def _welcome_section() -> ft.Container:
-    nama_depan = STUDENT["nama"].split()[0]
     return ft.Container(
         content=ft.Column(
             controls=[
                 ft.Text(
-                    f"Selamat datang kembali, {nama_depan}!",
+                    f"{_sapaan(datetime.now().hour)},",
+                    size=FontSize.SUBTITLE,
+                    color=ft.Colors.with_opacity(0.85, Colors.TEXT_ON_PRIMARY),
+                ),
+                ft.Text(
+                    STUDENT["nama"],
                     size=FontSize.HEADLINE,
                     weight=ft.FontWeight.BOLD,
                     color=Colors.TEXT_ON_PRIMARY,
                 ),
                 ft.Text(
-                    f"{STUDENT['program_studi']} - {STUDENT['fakultas']}. "
-                    "Pantau jadwal, nilai, dan informasi akademik kamu di sini.",
+                    "Selamat datang kembali! Pantau jadwal, nilai, dan informasi akademik kamu di sini.",
                     size=FontSize.BODY,
                     color=ft.Colors.with_opacity(0.85, Colors.TEXT_ON_PRIMARY),
+                ),
+                ft.Container(height=Spacing.XS),
+                ft.Row(
+                    controls=[
+                        _welcome_badge(f"NIM {STUDENT['nim']}"),
+                        _welcome_badge(STUDENT["program_studi"]),
+                    ],
+                    spacing=Spacing.SM,
+                    wrap=True,
                 ),
             ],
             spacing=Spacing.XS,
@@ -33,14 +67,27 @@ def _welcome_section() -> ft.Container:
     )
 
 
-def _stat_cards() -> ft.Row:
-    return ft.Row(
+def _summary_card(icon, label: str, value: str, caption: str) -> ft.Container:
+    card = stat_card(icon, label, value, caption)
+    card.col = STAT_CARD_COLUMNS
+    return card
+
+
+def _academic_summary() -> ft.ResponsiveRow:
+    return ft.ResponsiveRow(
         controls=[
-            stat_card(ft.Icons.AUTO_GRAPH, "IPK", f"{hitung_ipk():.2f}", "Skala 4.00"),
-            stat_card(ft.Icons.LIBRARY_BOOKS_OUTLINED, "Total SKS", str(total_sks_lulus()), "SKS telah ditempuh"),
-            stat_card(ft.Icons.CALENDAR_MONTH_OUTLINED, "Semester", str(STUDENT["semester_aktif"]), "Semester aktif"),
+            _summary_card(ft.Icons.AUTO_GRAPH, "IPK", f"{hitung_ipk():.2f}", "Skala 4.00"),
+            _summary_card(ft.Icons.LIBRARY_BOOKS_OUTLINED, "Total SKS", str(total_sks_lulus()), "SKS telah ditempuh"),
+            _summary_card(ft.Icons.CALENDAR_MONTH_OUTLINED, "Semester", str(STUDENT["semester_aktif"]), "Semester aktif"),
+            _summary_card(
+                ft.Icons.MENU_BOOK_OUTLINED,
+                "Mata Kuliah",
+                str(len(_mata_kuliah_semester_ini())),
+                "Diambil semester ini",
+            ),
         ],
         spacing=Spacing.MD,
+        run_spacing=Spacing.MD,
     )
 
 
@@ -104,10 +151,16 @@ def _pengumuman_item(item: dict) -> ft.Container:
     )
 
 
+def _jadwal_list() -> ft.Control:
+    if not JADWAL_HARI_INI:
+        return ft.Text("Tidak ada jadwal kuliah hari ini.", size=FontSize.BODY, color=Colors.TEXT_SECONDARY)
+    return ft.Column(controls=[_jadwal_item(item) for item in JADWAL_HARI_INI], spacing=Spacing.SM)
+
+
 def dashboard_page() -> ft.Control:
     jadwal = section_card(
         "Jadwal Kuliah Hari Ini",
-        ft.Column(controls=[_jadwal_item(item) for item in JADWAL_HARI_INI], spacing=Spacing.SM),
+        _jadwal_list(),
         icon=ft.Icons.EVENT_NOTE_OUTLINED,
         expand=3,
     )
@@ -120,7 +173,7 @@ def dashboard_page() -> ft.Control:
     return ft.Column(
         controls=[
             _welcome_section(),
-            _stat_cards(),
+            _academic_summary(),
             ft.Row(
                 controls=[jadwal, pengumuman],
                 spacing=Spacing.MD,
