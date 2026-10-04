@@ -1,7 +1,7 @@
 import flet as ft
 
 from components.card import section_card
-from components.theme import Colors, FontSize, Spacing
+from components.theme import Colors, FontSize, Radius, Spacing
 from data.dummy_data import MATA_KULIAH, STUDENT
 
 
@@ -53,7 +53,7 @@ def mata_kuliah_page() -> ft.Control:
                 ),
                 padding=Spacing.MD,
                 border=ft.Border.all(1, Colors.BORDER),
-                border_radius=8,
+                border_radius=Radius.MD,
             )
         )
 
